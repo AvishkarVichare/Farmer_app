@@ -1,3 +1,4 @@
+const Donation = require('../models/Donation.Schema');
 const Post = require('../models/Post.Schema');
 const User = require('../models/User.Schema');
 
@@ -16,11 +17,10 @@ exports.createPostController = async (req, res) => {
   try {
 
     const user = await User.findById(req.user);
-    const { title, description, imageUrl, type } = req.body;
+    const {  description, imageUrl, type } = req.body;
     
     // console.log(req.user)
     const post = new Post({
-      title,
       userName: user.name,
       description,
       imageUrl,
@@ -78,6 +78,56 @@ exports.likeUnlikePostController = async (req, res) => {
   }
 }
 
+
+exports.LendRequest = async (req,res) =>{
+
+  try {
+
+    const user = req.user;
+    const {receiverId,amount,intrest,postId} = req.body;
+
+    const donation = new Donation({
+      sender:user,
+      receiver:receiverId,
+      amount:amount,
+      intrest:intrest,
+      post:postId
+    });
+    await donation.save().then((res)=>{
+      console.log(res);
+    })
+    res.send({
+      status:200,
+      message:"Lend request success",
+    });
+
+
+  }catch(err){
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
+exports.getBids = async (req,res) =>{
+    try{
+        const {postId} = req.body;
+        console.log(req.body);
+
+        const bids = await Donation.find({post:postId}).populate("sender");
+        res.status(200).json({
+          success: true,
+          bids
+        }); 
+
+    }catch(err){
+      res.status(500).json({
+        success: false,
+        message: err.message
+      });
+    }
+}
 
 exports.addComentController = async (req, res) => {
   try {
@@ -137,33 +187,33 @@ exports.getCommentsController = async (req, res) => {
 }
 
 
-exports.createDonationBid = async(req, res)=>{
-  try{
+// exports.createDonationBid = async(req, res)=>{
+//   try{
 
-    const {postId} = req.params;
-    const {amount, interest} = req.body;
-    console.log(postId)
-    const post = await Post.findById(postId);
-    const bid = {
-      user: req.user,
-      amount,
-      interest
-    }
+//     const {postId} = req.params;
+//     const {amount, interest} = req.body;
+//     console.log(postId)
+//     const post = await Post.findById(postId);
+//     const bid = {
+//       user: req.user,
+//       amount,
+//       interest
+//     }
 
-    post.donations.push(bid);
+//     post.donations.push(bid);
 
-    await post.save();
+//     await post.save();
 
-    res.status(200).json({
-      success: true,
-      bid,
-      message: "bid added successfully"
-    })
+//     res.status(200).json({
+//       success: true,
+//       bid,
+//       message: "bid added successfully"
+//     })
 
-  }catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message
-    })
-  }
-}
+//   }catch (err) {
+//     res.status(500).json({
+//       success: false,
+//       message: err.message
+//     })
+//   }
+// }

@@ -1,13 +1,13 @@
-const User = require('../models/User.Schema');
 const bcrypt = require('bcryptjs')
-const Product = require('../models/Product.Schema')
+const Product = require('../models/Product.Schema');
+const Donation = require('../models/Donation.Schema');
+const User = require('../models/User.Schema')
 
 exports.signUpUserController = async(req, res)=>{
   try{
     const {name, password, contact, adhar,location,role} = req.body;
     console.log(req.body)
-    if(!name || !password || !contact)
-        throw new Error("Please fill all fieilds", 400)
+    if(!name || !password || !contact) throw new Error("Please fill all fieilds", 400)
 
     // const existingUser = await User.find({email});
     // console.log(existingUser)
@@ -117,3 +117,61 @@ exports.getUserBuyedProducts = async(req, res)=>{
 
     }
 }
+
+
+exports.getProductList = async(req, res)=>{
+    try{
+        const userId = req.user;
+        const products = await Product.find({user: userId});
+        res.status(200).json({
+            success: true,
+            products
+        })
+    }catch(err){
+
+    }
+}
+
+exports.getDonationList = async (req,res)=>{
+    try{
+        const user = req.user;
+        const donationList = await Donation.find({
+            $or:[{sender:user},{receiver:user}]
+        });
+        console.log(donationList);
+        res.status(200).send({
+            success:true,
+            donationList
+        });
+    }catch(err){
+        res.status(500).json(
+            {
+                success: false,
+                message: err.message
+            }
+        )
+    }
+}
+
+exports.getUserWhoBoughtProductds = async(req, res)=>{
+    try{
+        const { productID} =req.params;
+        const product = await Product.findById(productID).populate("buyers")
+
+
+        res.status(200).json({
+            success: true,
+            message: "done",
+            orders: product.buyers
+        })
+    }catch(err){
+        res.status(500).json(
+            {
+                success: false,
+                message: err.message
+            }
+        )
+    }
+}
+
+// exports.addMoneyController = async(req, res)
