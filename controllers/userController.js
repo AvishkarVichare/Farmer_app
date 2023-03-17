@@ -1,11 +1,12 @@
 const User = require('../models/User.Schema');
 const bcrypt = require('bcryptjs')
+const Product = require('../models/Product.Schema')
 
 exports.signUpUserController = async(req, res)=>{
   try{
-    const {name, email, password, contact, adhar} = req.body;
-
-    if(!name || !email || !password || !contact)
+    const {name, password, contact, adhar,location,role} = req.body;
+    console.log(req.body)
+    if(!name || !password || !contact)
         throw new Error("Please fill all fieilds", 400)
 
     // const existingUser = await User.find({email});
@@ -14,7 +15,7 @@ exports.signUpUserController = async(req, res)=>{
     // if(existingUser)
         // throw new Error("User already exists", 400)
 
-    if(req.body.role == 'farmer' && !adhar)
+    if(req.body.role == 'FARMER' && !adhar)
           throw new Error("Need Adhar no. for farmers", 400)
         
 
@@ -23,10 +24,11 @@ exports.signUpUserController = async(req, res)=>{
 
     const user = await User.create({
         name,
-        email,
         password: encryptedPassword,
         contact,
-        adhar
+        adhar,
+        location,
+        role
 
     })
 
@@ -54,12 +56,12 @@ exports.signUpUserController = async(req, res)=>{
 
 exports.loginController = async(req, res)=>{
    try{
-    const {email, password} = req.body;
+    const {contact, password} = req.body;
 
-    if(!email || !password)
+    if(!contact || !password)
         throw new Error("Please fill all fieilds", 400);
 
-    const user = await User.findOne({email})
+    const user = await User.findOne({contact})
     console.log(user)
     if(!user)
         throw new Error("Invalid credentials", 400)
@@ -86,4 +88,32 @@ exports.loginController = async(req, res)=>{
         message:err.message
     })
   }
+}
+
+exports.getUserController = async(req, res)=>{
+    try{
+        const user = await User.findById(req.user);
+        if(!user) throw new Error("not such User Found");
+
+        res.status(200).json({
+            success: true,
+            user,
+            message: "user retrived successfully"
+        })
+    }catch(err){
+        res.status(500).json({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+exports.getUserBuyedProducts = async(req, res)=>{
+    try {
+        const userId = req.user;
+        const products = await Product.find({ buyers: userId });
+        res.status(200).json({ products });
+      }catch(err){
+
+    }
 }

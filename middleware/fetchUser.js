@@ -8,6 +8,7 @@ const secret = "shhh";
 const fetchUser = (req,res,next)=>{
     // Get user from jwt token and add user id to req object 
     const token = req.header('token');
+    // console.log(req)
 try{
 
     if(!token){

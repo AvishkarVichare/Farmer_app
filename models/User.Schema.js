@@ -9,15 +9,20 @@ const userSchema = new mongoose.Schema({
     },
     contact: {
         type: String,
-        required: true
+        required: true,
+        unique:true
     },
     
-    email: {
+    // email: {
+    //     type: String,
+    //     required: true
+    // },
+
+    password:{
         type: String,
         required: true
     },
-
-    password:{
+    location:{
         type: String,
         required: true
     },
@@ -30,6 +35,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['admin', 'user', 'farmer'],
         default: 'farmer'
+    },
+    balance:{
+        type: Number,
+        default: 0,
     }
 });
 
